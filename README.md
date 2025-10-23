@@ -1,5 +1,5 @@
 # Pygame-Project
-A game engine and game built in pygame, aimed at praticing classes, objects, and splitting a project across multiple files for added modularity and simplified expansion.
+A game engine and game built in pygame, aimed at practicing classes, objects, and splitting a project across multiple files for added modularity and simplified expansion.
 
 Contents:
 
