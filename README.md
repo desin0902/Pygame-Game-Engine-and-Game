@@ -1,14 +1,14 @@
 # Pygame-Project
-A game engine and game built in pygame, aimed at practicing classes, objects, and splitting a project across multiple files for added modularity and simplified expansion.
+A game engine and game built in pygame, aimed at practicing classes, objects, and splitting a project across multiple files for added modularity and simplified expansion. Drafted end-to-end and making the best possible use of superclasses and subclasses, global variables and modification through settings sliders, frontend UI elements. Forgive the art, I cobbled something workable together as a proof of concept.
 
 Contents:
 
 assets: A folder containing all non-code assets the game uses.
   img: An images folder containing all the sprites in the game, as well as backgrounds and transition screens.
 
-  sounds: A folder containing all of the sound effects and music for the game. All if it creative commons from freesound.org.
+  levels: The folder containing all of the tilemaps of the game, stored as .txt files. Easy to edit if you wish. B is for "block", G is for "gold block" (same function), P is       "player", E is "enemy", and F is "flag".
 
-  tilemap.txt: The first map of the game, separated into a .txt file for easy management and expansion.
+  sounds: A folder containing all of the sound effects and music for the game. All if it creative commons from freesound.org.
 
   Cantarell.ttf: The font used for the games restart button.
 
@@ -20,6 +20,8 @@ main.py: The main game file, containing the game's main loop and its different s
 
 main.spec: The pyinstaller specification file for the game.
 
+parents.py: Contains all of the superclasses for the most generic practical versions of all of the types in the game.
+
 sprites.py: Contains the different sprite classes in the game, the camera, collision detection, the button function, sound effects, and sprite animation management.
 
-spritesheet.py: Contains a function that simplifies use of spritesheets for animation in sprites.py.
+utils.py: Contains all of the classes and functions necessary for utilities, like UI elements and the camera.
