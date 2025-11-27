@@ -22,6 +22,8 @@ main.spec: The pyinstaller specification file for the game.
 
 parents.py: Contains all of the superclasses for the most generic practical versions of all of the types in the game.
 
+soundmanager.py: A sound manager to handle all of the sounds in the game. Fascilitates easy muting and unmuting.
+
 sprites.py: Contains the different sprite classes in the game, the camera, collision detection, the button function, sound effects, and sprite animation management.
 
 utils.py: Contains all of the classes and functions necessary for utilities, like UI elements and the camera.
