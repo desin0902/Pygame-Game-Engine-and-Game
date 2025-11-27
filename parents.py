@@ -129,7 +129,7 @@ class DisplayText():
         self.width = int(self.initial_width * self.scale_factor)
         self.height = int(self.initial_height * self.scale_factor)
 
-        self.image = pygame.Surface((self.width, self.height))
+        self.image = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         if self.bg:
             self.image.fill(self.bg)
 
