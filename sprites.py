@@ -282,6 +282,31 @@ class Enemy(AnimatedSprite):
     @property
     def is_on_screen(self):
         return self.rect.colliderect(self.game.camera.get_world_rect())
+    
+
+    def collision_detect(self, direction):
+        super().collision_detect(direction)
+        hits = pygame.sprite.spritecollide(self, self.game.enemy, False)
+        hits = [enemy for enemy in hits if enemy != self]
+        if direction == 'x':
+            if hits:
+                if self.x_change > 0:
+                    self.rect.right = hits[0].rect.left
+                    self.move_state = 'left'
+                elif self.x_change < 0:
+                    self.rect.left = hits[0].rect.right
+                    self.move_state = 'right'
+                self.x_change = 0
+        elif direction == 'y':
+            if hits:
+                if self.y_change > 0:
+                    self.rect.bottom = hits[0].rect.top
+                    self.grounded = True
+                elif self.y_change < 0:
+                    self.rect.top = hits[0].rect.bottom
+                self.y_change = 0
+            else:
+                self.grounded = False
 
 
     def movement(self):
