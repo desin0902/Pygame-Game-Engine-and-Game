@@ -18,11 +18,10 @@ class Camera:
         x = -target.rect.centerx + int(self.width / 2)
         y = -target.rect.centery + int(self.height / 2)
 
-        # limit scrolling to map size
-        x = min(0, x)  # left
-        x = max(-(self.map_width - self.width), x)  # right
-        y = min(0, y)  # top
-        y = max(-(self.map_height - self.height), y)  # bottom
+        x = min(0, x)
+        x = max(-(self.map_width - self.width), x)
+        y = min(0, y)
+        y = max(-(self.map_height - self.height), y)
 
         self.camera = pygame.Rect(x, y, self.width, self.height)
 
@@ -41,12 +40,14 @@ class Button(DisplayText):
     def update_position(self, scale_factor):
         super().update_position(scale_factor)
 
-    def is_pressed(self, pos, pressed):
+    def draw(self, surface, pad):
+        x_pad, y_pad = pad
+        surface.blit(self.image, (self.x + x_pad, self.y + y_pad))
+
+    def is_pressed(self, pos):
         if self.rect.collidepoint(pos):
-            if pressed[0]:
-                self.button_sound.play()
-                return True
-            return False
+            self.button_sound.play()
+            return True
         return False
 
 
@@ -90,6 +91,7 @@ class Slider():
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
         self.thumb_x = self.x + int(self.value * self.width)
+        self.thumb_radius = int(self.initial_height * self.scale_factor * 1.2)
         self.font = pygame.font.Font(None, int(self.fontsize * self.scale_factor))
 
         extra_click_height = int(self.height * 2.5)
@@ -101,37 +103,44 @@ class Slider():
             extra_click_height
         )
 
-    def draw(self, surface):
-        pygame.draw.rect(surface, self.fg, self.rect)
-        pygame.draw.rect(surface, self.fg, self.rect, 2)
+    def draw(self, surface, pad):
+        x_pad, y_pad = pad
+        rect = self.rect.move(x_pad, y_pad)
+        pygame.draw.rect(surface, self.fg, rect)
+        pygame.draw.rect(surface, self.fg, rect, 2)
 
-        thumb_center = (self.thumb_x, self.y + self.height // 2)
+        thumb_center = (self.thumb_x + x_pad, self.y + y_pad + self.height // 2)
         pygame.draw.circle(surface, self.fg, thumb_center, self.thumb_radius)
 
         actual_value = self.min_value + self.value * (self.max_value - self.min_value)
         label = f"{self.name}: {round(actual_value, 2)}"
         text_surface = self.font.render(label, True, self.fg)
 
-        surface.blit(text_surface, (self.x, self.y - self.fontsize - 5))
+        surface.blit(text_surface, (self.x + x_pad, self.y + y_pad - self.fontsize - 5))
 
-    def interact(self, event):
+    def interact(self, event, pad=(0,0)):
+        x_pad, y_pad = pad
+
+        padded_rect = self.click_rect.move(x_pad, y_pad)
+
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.click_rect.collidepoint(event.pos):
+            if padded_rect.collidepoint(event.pos):
                 self.dragging = True
-                relative_x = max(self.x, min(event.pos[0], self.x + self.width))
-                self.value = (relative_x - self.x) / self.width
-                self.thumb_x = self.x + int(self.value * self.width)
-        
-        elif event.type == pygame.MOUSEBUTTONUP and self.dragging:
+                self.track_mouse(event.pos, pad)
+        elif event.type == pygame.MOUSEBUTTONUP:
             self.dragging = False
             self.update_value()
-        
         elif event.type == pygame.MOUSEMOTION and self.dragging:
-            self.track_mouse(event.pos)
+            self.track_mouse(event.pos, pad)
 
-    def track_mouse(self, pos):
-        relative_x = max(self.x, min(pos[0], self.x + self.width))
-        self.value = (relative_x - self.x) / self.width
+
+    def track_mouse(self, pos, pad=(0,0)):
+        x_pad, y_pad = pad
+
+        mouse_x_local = pos[0] - x_pad
+        mouse_x_local = max(self.x, min(mouse_x_local, self.x + self.width))
+
+        self.value = (mouse_x_local - self.x) / self.width
         self.thumb_x = self.x + int(self.value * self.width)
 
     def update_value(self):
