@@ -291,6 +291,3 @@ class Enemy(AnimatedSprite):
             self.x_change = 1
         else:
             self.x_change = 0
-
-
-
