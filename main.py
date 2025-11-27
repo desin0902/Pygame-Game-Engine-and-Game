@@ -133,11 +133,14 @@ class Game:
                 self.playing = False
                 self.running = False
             elif event.type == pygame.VIDEORESIZE:
-                self.screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-                self.scale_factor = min(event.w / WIN_WIDTH, event.h / WIN_HEIGHT)
-                self.timer.update_position(self.scale_factor)
-                self.score.update_position(self.scale_factor)
-                self.lives.update_position(self.scale_factor)
+                self.resize(event)
+
+    def resize(self, event):
+        self.screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+        self.scale_factor = min(event.w / WIN_WIDTH, event.h / WIN_HEIGHT)
+        self.timer.update_position(self.scale_factor)
+        self.score.update_position(self.scale_factor)
+        self.lives.update_position(self.scale_factor)
 
     def update(self):
         #game loop updates
@@ -195,12 +198,6 @@ class Game:
             sprite.kill()
 
         while self.waiting_for_restart and self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
-
-            mouse_pos = pygame.mouse.get_pos()
-            mouse_pressed = pygame.mouse.get_pressed()
 
             screen_width, screen_height = self.screen.get_size()
             self.scale_factor = min(screen_width / WIN_WIDTH, screen_height / WIN_HEIGHT)
@@ -208,16 +205,22 @@ class Game:
             adj_height = int(WIN_HEIGHT * self.scale_factor)
             x_pad = (screen_width - adj_width) // 2
             y_pad = (screen_height - adj_height) // 2
+            pad = (x_pad, y_pad)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = event.pos
+                    adj_mouse_x = mouse_pos[0] - x_pad
+                    adj_mouse_y = mouse_pos[1] - y_pad
+                    adj_mouse_pos = (adj_mouse_x, adj_mouse_y)
+                    if restart_button.is_pressed(adj_mouse_pos):
+                        self.waiting_for_restart = False
+                        return
 
             restart_button.update_position(self.scale_factor)
-
-            adj_mouse_x = mouse_pos[0] - x_pad
-            adj_mouse_y = mouse_pos[1] - y_pad
-            adj_mouse_pos = (adj_mouse_x, adj_mouse_y)
-
-            if restart_button.is_pressed(adj_mouse_pos, mouse_pressed):
-                self.waiting_for_restart = False
-                return
 
             scaled_go_background = pygame.transform.scale(self.go_background, (adj_width, adj_height))
 
@@ -245,12 +248,6 @@ class Game:
                     sprite.kill()
 
                 while self.waiting_for_restart and self.running:
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            self.running = False
-
-                    mouse_pos = pygame.mouse.get_pos()
-                    mouse_pressed = pygame.mouse.get_pressed()
 
                     screen_width, screen_height = self.screen.get_size()
                     self.scale_factor = min(screen_width / WIN_WIDTH, screen_height / WIN_HEIGHT)
@@ -259,15 +256,20 @@ class Game:
                     x_pad = (screen_width - adj_width) // 2
                     y_pad = (screen_height - adj_height) // 2
 
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            self.running = False
+                        
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                            mouse_pos = event.pos
+                            adj_mouse_x = mouse_pos[0] - x_pad
+                            adj_mouse_y = mouse_pos[1] - y_pad
+                            adj_mouse_pos = (adj_mouse_x, adj_mouse_y)
+                            if restart_button.is_pressed(adj_mouse_pos):
+                                self.waiting_for_restart = False
+                                return
+
                     restart_button.update_position(self.scale_factor)
-
-                    adj_mouse_x = mouse_pos[0] - x_pad
-                    adj_mouse_y = mouse_pos[1] - y_pad
-                    adj_mouse_pos = (adj_mouse_x, adj_mouse_y)
-
-                    if restart_button.is_pressed(adj_mouse_pos, mouse_pressed):
-                        self.waiting_for_restart = False
-                        return
 
                     scaled_gw_background = pygame.transform.scale(self.gw_background, (adj_width, adj_height))
 
@@ -292,27 +294,32 @@ class Game:
                                 fontsize=32, scale_factor=self.scale_factor)
 
         while intro and self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    intro = False
-                    self.running = False
-
-            mouse_pos = pygame.mouse.get_pos()
-            mouse_pressed = pygame.mouse.get_pressed()
-
             screen_width, screen_height = self.screen.get_size()
             self.scale_factor = min(screen_width / WIN_WIDTH, screen_height / WIN_HEIGHT)
             adj_width = int(WIN_WIDTH * self.scale_factor)
             adj_height = int(WIN_HEIGHT * self.scale_factor)
             x_pad = (screen_width - adj_width) // 2
             y_pad = (screen_height - adj_height) // 2
+            pad = (x_pad, y_pad)
+    
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    intro = False
+                    self.running = False
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = event.pos
+                    adj_mouse_x = mouse_pos[0] - x_pad
+                    adj_mouse_y = mouse_pos[1] - y_pad
+                    adj_mouse_pos = (adj_mouse_x, adj_mouse_y)
+                    if play_button.is_pressed(adj_mouse_pos):
+                        intro = False
+
+                    if options_button.is_pressed(adj_mouse_pos):
+                        self.options_screen()
             
             play_button.update_position(self.scale_factor)
             options_button.update_position(self.scale_factor)
-
-            adj_mouse_x = mouse_pos[0] - x_pad
-            adj_mouse_y = mouse_pos[1] - y_pad
-            adj_mouse_pos = (adj_mouse_x, adj_mouse_y)
 
             scaled_intro_background = pygame.transform.scale(self.intro_background, (adj_width, adj_height))
 
@@ -324,17 +331,17 @@ class Game:
             self.clock.tick(FPS)
             pygame.display.update()
 
-            if play_button.is_pressed(adj_mouse_pos, mouse_pressed):
-                intro = False
-
-            if options_button.is_pressed(adj_mouse_pos, mouse_pressed):
-                self.options_screen()
-
     def options_screen(self):
         options = True
 
+        paused = False
+
         exit_button = Button(x=10, y=0, width=100, height=50, 
                                 fg=WHITE, bg=BLACK, content='Exit', 
+                                fontsize=32, scale_factor=self.scale_factor)
+        
+        mute_button = Button(x=150, y=80, width=280, height=50,
+                                fg=WHITE, bg=None, content='Mute',
                                 fontsize=32, scale_factor=self.scale_factor)
         
         gravity_slider = Slider(x=150, y=200, width=280, height=10, 
@@ -365,19 +372,6 @@ class Game:
                                 max_value=100)
 
         while options and self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    options = False
-                    self.running = False
-
-                gravity_slider.interact(event)
-                friction_slider.interact(event)
-                air_res_slider.interact(event)
-                player_speed_slider.interact(event)
-                max_speed_slider.interact(event)
-
-            mouse_pos = pygame.mouse.get_pos()
-            mouse_pressed = pygame.mouse.get_pressed()
 
             screen_width, screen_height = self.screen.get_size()
             self.scale_factor = min(screen_width / WIN_WIDTH, screen_height / WIN_HEIGHT)
@@ -385,31 +379,54 @@ class Game:
             adj_height = int(WIN_HEIGHT * self.scale_factor)
             x_pad = (screen_width - adj_width) // 2
             y_pad = (screen_height - adj_height) // 2
+            pad = (x_pad, y_pad)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    options = False
+                    self.running = False
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = event.pos
+                    adj_mouse_x = mouse_pos[0] - x_pad
+                    adj_mouse_y = mouse_pos[1] - y_pad
+                    adj_mouse_pos = (adj_mouse_x, adj_mouse_y)
+                    if exit_button.is_pressed(adj_mouse_pos):
+                        options = False
+                    if mute_button.is_pressed(adj_mouse_pos):
+                        if paused:
+                            paused = False
+                            print("HI")
+                            pygame.mixer.unpause()
+                        else:
+                            paused = True
+                            pygame.mixer.pause()
+
+                gravity_slider.interact(event, pad)
+                friction_slider.interact(event, pad)
+                air_res_slider.interact(event, pad)
+                player_speed_slider.interact(event, pad)
+                max_speed_slider.interact(event, pad)
             
             exit_button.update_position(self.scale_factor)
+            mute_button.update_position(self.scale_factor)
             gravity_slider.update_position(self.scale_factor)
             friction_slider.update_position(self.scale_factor)
             air_res_slider.update_position(self.scale_factor)
             player_speed_slider.update_position(self.scale_factor)
             max_speed_slider.update_position(self.scale_factor)
 
-            adj_mouse_x = mouse_pos[0] - x_pad
-            adj_mouse_y = mouse_pos[1] - y_pad
-            adj_mouse_pos = (adj_mouse_x, adj_mouse_y)
-
-            if exit_button.is_pressed(adj_mouse_pos, mouse_pressed):
-                options = False
-
             scaled_intro_background = pygame.transform.scale(self.intro_background, (adj_width, adj_height))
 
             self.screen.fill(BLACK)
             self.screen.blit(scaled_intro_background, (x_pad, y_pad))
-            self.screen.blit(exit_button.image, (x_pad + 10 * self.scale_factor, y_pad + 0 * self.scale_factor))
-            gravity_slider.draw(self.screen)
-            friction_slider.draw(self.screen)
-            air_res_slider.draw(self.screen)
-            player_speed_slider.draw(self.screen)
-            max_speed_slider.draw(self.screen)
+            exit_button.draw(self.screen, (x_pad, y_pad))
+            mute_button.draw(self.screen, (x_pad, y_pad))
+            gravity_slider.draw(self.screen, (x_pad, y_pad))
+            friction_slider.draw(self.screen, (x_pad, y_pad))
+            air_res_slider.draw(self.screen, (x_pad, y_pad))
+            player_speed_slider.draw(self.screen, (x_pad, y_pad))
+            max_speed_slider.draw(self.screen, (x_pad, y_pad))
 
             self.clock.tick(FPS)
             pygame.display.update()
