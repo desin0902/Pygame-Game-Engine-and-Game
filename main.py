@@ -118,6 +118,12 @@ class Game:
         else:
             self.win_game()
 
+    def set_level(self, level):
+        if level >= len(LEVELS):
+            return
+        self.level_index = level
+        self.reset_level()
+
     def lose(self):
         self.win = False
         self.playing = False
@@ -134,6 +140,11 @@ class Game:
                 self.running = False
             elif event.type == pygame.VIDEORESIZE:
                 self.resize(event)
+            # Dev key for testing. Remove later
+            elif event.type == pygame.KEYDOWN:
+                if pygame.K_0 <= event.key <= pygame.K_9:
+                    level_number = event.key - pygame.K_0
+                    self.set_level(level_number)
 
     def resize(self, event):
         self.screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
