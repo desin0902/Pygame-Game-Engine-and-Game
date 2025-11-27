@@ -2,6 +2,7 @@ import pygame
 from sprites import *
 from utils import *
 from config import *
+from soundmanager import SoundManager
 import sys
 
 class Game:
@@ -39,11 +40,13 @@ class Game:
                            scale_factor=self.scale_factor)
 
         pygame.mixer.init()
-        pygame.mixer.music.load(resource_path(MUSIC_MAIN))
-        self.win_sound = pygame.mixer.Sound(resource_path(SOUND_WIN))
-        self.win_sound.set_volume(VOL_SOUND)
-        self.lose_sound = pygame.mixer.Sound(resource_path(SOUND_GAME_OVER))
-        self.lose_sound.set_volume(VOL_SOUND)
+        self.sound = SoundManager()
+        self.sound.load_sound("music", resource_path(MUSIC_MAIN), volume=VOL_SOUND)
+        self.sound.load_sound("win", resource_path(SOUND_WIN), volume=VOL_SOUND)
+        self.sound.load_sound("lose", resource_path(SOUND_GAME_OVER), volume=VOL_SOUND)
+        self.sound.load_sound("button_click", resource_path(SOUND_MENU_SELECT), volume=VOL_SELECT)
+        self.sound.load_sound("jump", resource_path(SOUND_JUMP), volume=VOL_JUMP)
+        self.sound.load_sound("bounce", resource_path(SOUND_BOUNCE), volume=VOL_BOUNCE)
 
         self.win = False
 
@@ -90,7 +93,7 @@ class Game:
         self.lives.reset_lives()
         self.lives.update_position(self.scale_factor)
         
-        pygame.mixer.music.play(-1)
+        self.sound.play_music("music")
 
     def reset_level(self):
         for sprite in self.all_sprites:
@@ -109,7 +112,7 @@ class Game:
 
         self.createTilemap(self.levels[self.level_index])
 
-        pygame.mixer.music.play(-1)
+        self.sound.play_music("music")
 
     def next_level(self):
         self.level_index += 1
@@ -194,8 +197,8 @@ class Game:
             self.draw()
 
     def game_over(self):
-        pygame.mixer.music.stop()
-        self.lose_sound.play()
+        self.sound.stop_music("music")
+        self.sound.play_sound("lose")
 
         self.waiting_for_restart = True
 
@@ -203,7 +206,7 @@ class Game:
         button_height = 50
         button_x = (WIN_WIDTH - button_width) / 2
         button_y = (WIN_HEIGHT - button_height) / 2
-        restart_button = Button(button_x, button_y, button_width, button_height, WHITE, BLACK, 'Restart', 32, self.scale_factor)
+        restart_button = Button(button_x, button_y, button_width, button_height, WHITE, BLACK, 'Restart', 32, self.scale_factor, self)
 
         for sprite in self.all_sprites:
             sprite.kill()
@@ -244,8 +247,8 @@ class Game:
     def game_win(self):
         for sprite in self.player:
             if isinstance(sprite, Player):
-                pygame.mixer.music.stop()
-                self.win_sound.play()
+                self.sound.stop_music("music")
+                self.sound.play_sound("win")
 
                 self.waiting_for_restart = True
 
@@ -253,7 +256,7 @@ class Game:
                 button_height = 50
                 button_x = (WIN_WIDTH - button_width) / 2
                 button_y = (WIN_HEIGHT - button_height) / 2
-                restart_button = Button(button_x, button_y, button_width, button_height, WHITE, BLACK, 'Restart', 32, self.scale_factor)
+                restart_button = Button(button_x, button_y, button_width, button_height, WHITE, BLACK, 'Restart', 32, self.scale_factor, self)
 
                 for sprite in self.all_sprites:
                     sprite.kill()
@@ -299,10 +302,10 @@ class Game:
         button_height = 50
         button_x = (WIN_WIDTH - button_width) / 2
         button_y = (WIN_HEIGHT - button_height - 100) / 2
-        play_button = Button(button_x, button_y, button_width, button_height, WHITE, BLACK, 'Play', 32, self.scale_factor)
+        play_button = Button(button_x, button_y, button_width, button_height, WHITE, BLACK, 'Play', 32, self.scale_factor, self)
         options_button = Button(x=WIN_WIDTH-140, y=0, width=120, height=50, 
                                 fg=WHITE, bg=BLACK, content='Options', 
-                                fontsize=32, scale_factor=self.scale_factor)
+                                fontsize=32, scale_factor=self.scale_factor, game=self)
 
         while intro and self.running:
             screen_width, screen_height = self.screen.get_size()
@@ -345,15 +348,13 @@ class Game:
     def options_screen(self):
         options = True
 
-        paused = False
-
         exit_button = Button(x=10, y=0, width=100, height=50, 
                                 fg=WHITE, bg=BLACK, content='Exit', 
-                                fontsize=32, scale_factor=self.scale_factor)
+                                fontsize=32, scale_factor=self.scale_factor, game=self)
         
         mute_button = Button(x=150, y=80, width=280, height=50,
                                 fg=WHITE, bg=None, content='Mute',
-                                fontsize=32, scale_factor=self.scale_factor)
+                                fontsize=32, scale_factor=self.scale_factor, game=self)
         
         gravity_slider = Slider(x=150, y=200, width=280, height=10, 
                                 fg=WHITE, getvalue=lambda: config.GRAVITY, 
@@ -405,13 +406,7 @@ class Game:
                     if exit_button.is_pressed(adj_mouse_pos):
                         options = False
                     if mute_button.is_pressed(adj_mouse_pos):
-                        if paused:
-                            paused = False
-                            print("HI")
-                            pygame.mixer.unpause()
-                        else:
-                            paused = True
-                            pygame.mixer.pause()
+                        self.sound.toggle_mute()
 
                 gravity_slider.interact(event, pad)
                 friction_slider.interact(event, pad)
@@ -441,6 +436,7 @@ class Game:
 
             self.clock.tick(FPS)
             pygame.display.update()
+
 
 g = Game()
 g.intro_screen()

@@ -40,11 +40,7 @@ class Player(AnimatedSprite):
 
         self.dead = False
 
-        pygame.mixer.init()
-        self.jump_sound = pygame.mixer.Sound(resource_path(SOUND_JUMP))
-        self.jump_sound.set_volume(VOL_JUMP)
-        self.enemy_bounce = pygame.mixer.Sound(resource_path(SOUND_BOUNCE))
-        self.enemy_bounce.set_volume(VOL_BOUNCE)
+        #jump and bounce
 
     def update(self):
         self.movement()
@@ -71,7 +67,7 @@ class Player(AnimatedSprite):
             self.y_change -= PLAYER_JUMP_SPEED
             self.grounded = False
             new_state = PLAYER_JUMP
-            self.jump_sound.play()
+            self.game.sound.play_sound("jump")
 
         elif keys[pygame.K_RIGHT]:
             self.facing = 'right'
@@ -180,7 +176,7 @@ class Player(AnimatedSprite):
                         # increase score
                         self.game.score.increase_score(ENEMY_DIE_POINTS)
 
-                        self.enemy_bounce.play()
+                        self.game.sound.play_sound("bounce")
             else:
                 for hit in enemy_hits:
                     if hit.action_state != ENEMY_SMUSH and not self.dead:
@@ -287,7 +283,7 @@ class Enemy(AnimatedSprite):
     def collision_detect(self, direction):
         super().collision_detect(direction)
         hits = pygame.sprite.spritecollide(self, self.game.enemy, False)
-        hits = [enemy for enemy in hits if enemy != self]
+        hits = [enemy for enemy in hits if enemy != self] # Removing this causes funny things to happen
         if direction == 'x':
             if hits:
                 if self.x_change > 0:

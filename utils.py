@@ -31,11 +31,9 @@ class Camera:
 
 
 class Button(DisplayText):
-    def __init__(self, x, y, width, height, fg, bg, content, fontsize, scale_factor):
+    def __init__(self, x, y, width, height, fg, bg, content, fontsize, scale_factor, game):
         super().__init__(x, y, width, height, fg, content, fontsize, scale_factor, bg=bg)
-
-        self.button_sound = pygame.mixer.Sound(resource_path(SOUND_MENU_SELECT))
-        self.button_sound.set_volume(VOL_SELECT)
+        self.game = game
 
     def update_position(self, scale_factor):
         super().update_position(scale_factor)
@@ -46,7 +44,7 @@ class Button(DisplayText):
 
     def is_pressed(self, pos):
         if self.rect.collidepoint(pos):
-            self.button_sound.play()
+            self.game.sound.play_sound("button_click")
             return True
         return False
 
